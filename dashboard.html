@@ -1,0 +1,293 @@
+```html
+{% extends "base.html" %}
+
+{% block title %}
+    Dashboard
+{% endblock %}
+
+{% block content %}
+
+<!-- Dashboard Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+        <h1>Dashboard</h1>
+        <p class="text-muted mb-0">
+            Welcome, {{ user.username }}
+        </p>
+    </div>
+
+    <!-- Monitoring Status -->
+    <span
+        class="badge {{ 'bg-success' if monitoring else 'bg-secondary' }} fs-6"
+    >
+        {{ '● Monitoring' if monitoring else '● Stopped' }}
+    </span>
+
+</div>
+
+
+<!-- Statistics Cards -->
+<div class="row g-3 mb-4">
+
+    <!-- Total Emails -->
+    <div class="col-md-3">
+        <div class="card stat">
+            <div class="card-body">
+                <small>Total Emails</small>
+                <h2>
+                    {{ stats.total_emails }}
+                </h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- High Priority -->
+    <div class="col-md-3">
+        <div class="card stat">
+            <div class="card-body">
+                <small>High Priority</small>
+                <h2>
+                    {{ stats.high_priority }}
+                </h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="col-md-3">
+        <div class="card stat">
+            <div class="card-body">
+                <small>Notifications</small>
+                <h2>
+                    {{ stats.notifications }}
+                </h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- Replies Sent -->
+    <div class="col-md-3">
+        <div class="card stat">
+            <div class="card-body">
+                <small>Replies Sent</small>
+                <h2>
+                    {{ stats.replies if stats.replies is defined else 0 }}
+                </h2>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- Monitoring Controls -->
+<div class="card shadow-sm mb-4">
+
+    <div class="card-body">
+
+        <div class="d-flex gap-2 flex-wrap">
+
+            <!-- Start / Stop Monitoring -->
+            <button
+                id="toggleBtn"
+                class="btn {{ 'btn-danger' if monitoring else 'btn-success' }}"
+                onclick="toggleMonitor()"
+            >
+                {{ 'Stop Monitoring' if monitoring else 'Start Monitoring' }}
+            </button>
+
+            <!-- Test WhatsApp -->
+            <button
+                class="btn btn-outline-primary"
+                onclick="testWhatsApp()"
+            >
+                📱 Test WhatsApp
+            </button>
+
+            <!-- Settings -->
+            <a
+                class="btn btn-outline-dark"
+                href="{{ url_for('settings') }}"
+            >
+                ⚙️ Settings
+            </a>
+
+        </div>
+
+        <!-- AJAX Result Message -->
+        <div id="result" class="mt-3"></div>
+
+    </div>
+
+</div>
+
+
+<!-- Recent Emails -->
+<h4>Recent Emails</h4>
+
+<div class="table-responsive">
+
+    <table class="table table-hover align-middle">
+
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Sender</th>
+                <th>Subject</th>
+                <th>Category</th>
+                <th>Priority</th>
+                <th>AI</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for e in recent %}
+
+            <tr>
+
+                <!-- Received Time -->
+                <td>
+                    {{ e.received_at or e.processed_at }}
+                </td>
+
+                <!-- Sender -->
+                <td>
+                    {{ e.sender }}
+                </td>
+
+                <!-- Subject -->
+                <td>
+                    {{ e.subject }}
+                </td>
+
+                <!-- Category -->
+                <td>
+                    <span class="badge bg-info text-dark">
+                        {{ e.category }}
+                    </span>
+                </td>
+
+                <!-- Priority -->
+                <td>
+
+                    <span
+                        class="badge
+                        {{
+                            'bg-danger'
+                            if e.priority == 'HIGH'
+                            else
+                            'bg-warning text-dark'
+                            if e.priority == 'MEDIUM'
+                            else
+                            'bg-secondary'
+                        }}"
+                    >
+                        {{ e.priority }}
+                    </span>
+
+                </td>
+
+                <!-- AI Confidence -->
+                <td>
+                    {{ "%.1f"|format(e.confidence * 100) }}%
+                </td>
+
+                <!-- Open / Reply -->
+                <td>
+                    <a
+                        class="btn btn-sm btn-primary"
+                        href="{{ url_for('email_detail', email_id=e.id) }}"
+                    >
+                        Open / Reply
+                    </a>
+                </td>
+
+            </tr>
+
+            {% else %}
+
+            <!-- No Emails -->
+            <tr>
+                <td
+                    colspan="7"
+                    class="text-center text-muted"
+                >
+                    No processed emails yet.
+                </td>
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<script>
+
+    // Start / Stop Email Monitoring
+    async function toggleMonitor() {
+
+        const r = await fetch(
+            "{{ url_for('toggle_monitor') }}",
+            {
+                method: "POST"
+            }
+        );
+
+        const d = await r.json();
+
+        show(
+            d.message,
+            d.success ? "success" : "danger"
+        );
+
+        if (d.success) {
+            setTimeout(
+                () => location.reload(),
+                500
+            );
+        }
+    }
+
+
+    // Test WhatsApp Notification
+    async function testWhatsApp() {
+
+        const r = await fetch(
+            "{{ url_for('test_whatsapp') }}",
+            {
+                method: "POST"
+            }
+        );
+
+        const d = await r.json();
+
+        show(
+            d.message,
+            d.success ? "success" : "danger"
+        );
+    }
+
+
+    // Display Result Message
+    function show(message, type) {
+
+        document.getElementById("result").innerHTML =
+            `<div class="alert alert-${type}">${message}</div>`;
+
+    }
+
+</script>
+
+{% endblock %}
+```

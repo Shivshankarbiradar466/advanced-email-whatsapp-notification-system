@@ -1,0 +1,148 @@
+```html
+{% extends "base.html" %}
+
+{% block title %}
+    Email Details
+{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+
+    <h1>Email Details</h1>
+
+    <a
+        class="btn btn-outline-secondary"
+        href="{{ url_for('emails') }}"
+    >
+        ← Back
+    </a>
+
+</div>
+
+
+<!-- Email Information -->
+<div class="card shadow-sm mb-4">
+
+    <div class="card-body">
+
+        <h4>
+            {{ email.subject }}
+        </h4>
+
+        <p class="mb-1">
+            <strong>From:</strong>
+            {{ email.sender }}
+        </p>
+
+        <p class="mb-1">
+
+            <strong>Category:</strong>
+            {{ email.category }}
+
+            |
+
+            <strong>Priority:</strong>
+            {{ email.priority }}
+
+            |
+
+            <strong>AI:</strong>
+            {{ "%.1f"|format(email.confidence * 100) }}%
+
+        </p>
+
+        <p class="text-muted">
+            {{ email.received_at or email.processed_at }}
+        </p>
+
+        <hr>
+
+        <!-- Email Body -->
+        <div class="email-body">
+            {{ email.body_preview }}
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- Reply Form -->
+<div class="card shadow-sm mb-4">
+
+    <div class="card-body">
+
+        <h4>
+            ↩️ Reply to this email
+        </h4>
+
+        <p class="text-muted">
+            The reply is sent from your configured Gmail account.
+            You do not need to open Gmail or type the recipient address.
+        </p>
+
+        <form
+            method="post"
+            action="{{ url_for('reply_email', email_id=email.id) }}"
+        >
+
+            <textarea
+                name="body"
+                class="form-control"
+                rows="8"
+                placeholder="Type your reply here..."
+                required
+            ></textarea>
+
+            <button
+                type="submit"
+                class="btn btn-primary mt-3"
+            >
+                Send Reply
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- Reply History -->
+{% if replies %}
+
+    <h4>
+        Reply History
+    </h4>
+
+    {% for r in replies %}
+
+        <div class="card mb-2">
+
+            <div class="card-body">
+
+                <div>
+                    <strong>
+                        {{ r.status }}
+                    </strong>
+
+                    ·
+
+                    {{ r.sent_at }}
+
+                    ·
+
+                    To:
+                    {{ r.to_address }}
+                </div>
+
+                <div class="mt-2">
+                    {{ r.body }}
+                </div>
+
+                {% if r.error_message %}
+
+                    <di
+```

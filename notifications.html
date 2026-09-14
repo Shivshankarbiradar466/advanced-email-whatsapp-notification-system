@@ -1,0 +1,108 @@
+```html
+{% extends "base.html" %}
+
+{% block title %}
+    Notifications
+{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<h1 class="mb-4">
+    WhatsApp Notification History
+</h1>
+
+
+<!-- Notifications Table -->
+<div class="table-responsive">
+
+    <table class="table table-striped align-middle">
+
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Channel</th>
+                <th>Destination</th>
+                <th>Status</th>
+                <th>Provider SID</th>
+                <th>Error</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for n in notifications %}
+
+                <tr>
+
+                    <!-- Sent Time -->
+                    <td>
+                        {{ n.sent_at }}
+                    </td>
+
+                    <!-- Channel -->
+                    <td>
+                        {{ n.channel }}
+                    </td>
+
+                    <!-- Destination -->
+                    <td>
+                        {{ n.destination }}
+                    </td>
+
+                    <!-- Status -->
+                    <td>
+
+                        <span
+                            class="badge
+                            {{
+                                'bg-success'
+                                if n.status == 'SENT'
+                                else
+                                'bg-danger'
+                                if n.status == 'FAILED'
+                                else
+                                'bg-secondary'
+                            }}"
+                        >
+                            {{ n.status }}
+                        </span>
+
+                    </td>
+
+                    <!-- Provider SID -->
+                    <td>
+                        {{ n.provider_sid or '-' }}
+                    </td>
+
+                    <!-- Error Message -->
+                    <td class="small">
+                        {{ n.error_message or '-' }}
+                    </td>
+
+                </tr>
+
+            {% else %}
+
+                <!-- No Notifications -->
+                <tr>
+
+                    <td
+                        colspan="6"
+                        class="text-center"
+                    >
+                        No notifications yet.
+                    </td>
+
+                </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% endblock %}
+```
